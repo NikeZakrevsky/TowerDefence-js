@@ -40,6 +40,7 @@ function draw() {
     imagesPath.push({name: "180", path: "assets/PNG/Default size/towerDefense_tile180.png"});
     imagesPath.push({name: "249", path: "assets/PNG/Default size/towerDefense_tile249.png"});
     imagesPath.push({name: "245", path: "assets/PNG/Default size/towerDefense_tile245.png"});
+    imagesPath.push({name: "275", path: "assets/PNG/Default size/towerDefense_tile275.png"});
 
     for(var i = 0; i < imagesPath.length; i++) {
         var img = new Image()
@@ -85,6 +86,7 @@ function drawAll() {
     loadMap();
     drawTower();
     drawEnemy();
+    drawBullet();
 }
 
 var i = 0;
@@ -119,13 +121,11 @@ async function drawEnemy() {
         }
         await animate(sign_x, sign_y, enemyPoints[i].x, enemyPoints[i].y, enemyPoints[i].rotation);
     }
-
 }
 
 
 var TO_RADIANS = Math.PI/180; 
 function animate(sign_x, sign_y, aim_x, aim_y, rotatation) {
-    console.log('animate')
     return new Promise(function(resolve,reject){
         var delta_x = 0;
         var delta_y = 0;0, 0
@@ -133,6 +133,7 @@ function animate(sign_x, sign_y, aim_x, aim_y, rotatation) {
         function subAnimate() {
             loadMap();
             drawTower();
+            drawBullet();
             ctx.translate(x + delta_x + 31, y + delta_y + 31);
             ctx.rotate(rotatation * TO_RADIANS);
             ctx.drawImage(getImageByName("245"), -31, -31, 62, 62);
@@ -159,25 +160,65 @@ function animate(sign_x, sign_y, aim_x, aim_y, rotatation) {
     });
 }
 
-function getRandomInt() {
+
+function getAngle() {
     for (var i = 0; i < enemyPoints.length; i++) {
         var result = Math.sqrt(Math.pow(enemy_current_x-200, 2) + Math.pow(enemy_current_y-450, 2))
     }
     if (result < 150) {
         return Math.atan2(enemy_current_y - 450, enemy_current_x - 200);
     }
-    else return - Math.PI / 2;
+    else return -Math.PI / 2;
 }
+
+var bullet_current_x = 0;
+var bullet_current_y = 0
 
 function drawTower() {
     ctx.drawImage(getImageByName("180"), mapTower[0].x, mapTower[0].y);
-
     ctx.translate(mapTower[0].x+31, mapTower[0].y + 62 - 25);
-    ctx.rotate(getRandomInt() + Math.PI / 2);    
+    var angle = getAngle();
+    ctx.rotate(angle + Math.PI / 2); 
     ctx.drawImage(getImageByName("249"), -31, -62, 62, 62);
     ctx.translate(0, 0);
     ctx.setTransform(1,0,0,1,0,0);
+    if (bullet_current_x == 0) {
+        bullet_current_x = mapTower[0].x;
+        bullet_current_y = mapTower[0].y;
+    }
+    if (angle != -Math.PI / 2) {
+        
+        ctx.drawImage(getImageByName("275"), bullet_current_x, bullet_current_y);
 
+        if (bullet_current_x == enemy_current_x || bullet_current_y == enemy_current_y) {
+            bullet_current_x = mapTower[0].x;
+            bullet_current_y = mapTower[0].y;
+        }
+
+        console.log(bullet_current_y, enemy_current_y, bullet_current_x, enemy_current_x)
+        var a = (bullet_current_y - enemy_current_y) / (bullet_current_x - enemy_current_x)
+        var b = enemy_current_y - a * enemy_current_x;
+        
+        if ((angle >= Math.PI / 2 && angle <= Math.PI) || (angle >= -Math.PI && angle <= -Math.PI / 2)) {
+            bullet_current_x -= 1
+        }
+        else {
+            bullet_current_x += 1
+        }
+        
+        bullet_current_y = a * bullet_current_x + b;
+
+        
+    }
+}
+
+function drawBullet() {
+    for (var i = 0; i < enemyPoints.length; i++) {
+        var result = Math.sqrt(Math.pow(enemy_current_x-200, 2) + Math.pow(enemy_current_y-450, 2))
+        if (result < 150) {
+            
+        }
+    }
 }
 
 function getImageByName(name) {
