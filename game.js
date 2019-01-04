@@ -62,7 +62,7 @@ var enemyPoints = [{
 },{
     x: 350,
     y: 360,
-    rotation: 180
+    rotation: 0
 },{
     x: 350,
     y: 40,
@@ -90,6 +90,10 @@ function drawAll() {
 var i = 0;
 var x = 100;
 var y = 500;
+
+var enemy_current_x = 100;
+var enemy_current_y = 500;
+
 async function drawEnemy() {
     for (var i = 0; i < enemyPoints.length; i++) {
         var sign_x;
@@ -113,7 +117,6 @@ async function drawEnemy() {
         if(enemyPoints[i].y > y) {
             sign_y = 1;
         }
-        console.log(sign_x, sign_y)
         await animate(sign_x, sign_y, enemyPoints[i].x, enemyPoints[i].y, enemyPoints[i].rotation);
     }
 
@@ -125,7 +128,7 @@ function animate(sign_x, sign_y, aim_x, aim_y, rotatation) {
     console.log('animate')
     return new Promise(function(resolve,reject){
         var delta_x = 0;
-        var delta_y = 0;
+        var delta_y = 0;0, 0
 
         function subAnimate() {
             loadMap();
@@ -136,11 +139,12 @@ function animate(sign_x, sign_y, aim_x, aim_y, rotatation) {
             ctx.translate(0, 0);
             ctx.setTransform(1,0,0,1,0,0);
 
-            
-            console.log()
             delta_x += sign_x;
             delta_y += sign_y;
-            console.log((x + delta_x), (y + delta_y))
+
+            enemy_current_x = x + delta_x;
+            enemy_current_y = y + delta_y;
+
             if ((x + delta_x) != aim_x || (y + delta_y) != aim_y) { 
                 requestAnimationFrame(subAnimate);
             }
@@ -155,9 +159,25 @@ function animate(sign_x, sign_y, aim_x, aim_y, rotatation) {
     });
 }
 
+function getRandomInt() {
+    for (var i = 0; i < enemyPoints.length; i++) {
+        var result = Math.sqrt(Math.pow(enemy_current_x-200, 2) + Math.pow(enemy_current_y-450, 2))
+    }
+    if (result < 150) {
+        return Math.atan2(enemy_current_y - 450, enemy_current_x - 200);
+    }
+    else return - Math.PI / 2;
+}
+
 function drawTower() {
     ctx.drawImage(getImageByName("180"), mapTower[0].x, mapTower[0].y);
-    ctx.drawImage(getImageByName("249"), mapTower[0].x, mapTower[0].y-25);
+
+    ctx.translate(mapTower[0].x+31, mapTower[0].y + 62 - 25);
+    ctx.rotate(getRandomInt() + Math.PI / 2);    
+    ctx.drawImage(getImageByName("249"), -31, -62, 62, 62);
+    ctx.translate(0, 0);
+    ctx.setTransform(1,0,0,1,0,0);
+
 }
 
 function getImageByName(name) {
@@ -178,12 +198,3 @@ function loadMap() {
 }
 
 draw();
-
-/*function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(imgTag, x, y);                     
-  x += 4;
-  y = Math.sqrt(x) * 10;
-  console.log(x, y);
-  if (x < 1000) requestAnimationFrame(animate);
-}*/
