@@ -17,10 +17,6 @@ var map =
             ["024","025","023","024","024","024","024","024","024","024","024","026","001","001","001","001","001","001"],
             ["024","025","023","024","024","024","024","024","024","024","024","024","024","024","024","024","024","024"]
         ]
-
-var mapTower = [
-    {x: 200, y: 450, type: "249"}
-];
         
 var imgs = []
 
@@ -29,7 +25,7 @@ function uniqueArray(array) {
     return result    
   }
 
-function draw() {
+function loadImages() {
     var loaded = 0;
     var imagesPath = [];
     var uniqueMap = uniqueArray(map.flat());
@@ -82,91 +78,116 @@ var enemyPoints = [{
     rotation: 0
 }];
 
-function drawAll() {
+class Bullet {
+    constructor(initPointX, initPointY) {
+        this.initPointX = initPointX;
+        this.initPointY = initPointY;
+        this.currentPointX = initPointX;
+        this.currentPointY = initPointY;
+    }
+
+    set setCurrentPointX(X) {
+        this.currentPointX = X;
+    }
+
+    set setCurrentPointY(Y) {
+        this.currentPointY = Y;
+    }
+}
+
+class Tower {
+    constructor(x, y, imageId) {
+        this.x = x;
+        this.y = y;
+        this.imageId = imageId;
+        this.bullets = [];
+        this.lastShoot = 0;
+    }
+}
+
+var tower = new Tower(200, 450, '249')
+
+var towers = [tower];
+
+class Enemy {
+    constructor(initPointX, initPointY) {
+        this.initPointX = initPointX;
+        this.initPointY = initPointY;
+        this.currentPointX = initPointX;
+        this.currentPointY = initPointY;
+    }
+
+    set setCurrentPointX(X) {
+        this.currentPointX = X;
+    }
+
+    set setCurrentPointY(Y) {
+        this.currentPointY = Y;
+    }
+}
+
+var enemy = new Enemy(100, 500);
+
+function draw() {
     loadMap();
-    drawTower();
     drawEnemy();
-    drawBullet();
+    drawTower();
+    requestAnimationFrame(draw)
+}
+
+function drawAll() {
+    requestAnimationFrame(draw);
 }
 
 var i = 0;
-var x = 100;
-var y = 500;
+var TO_RADIANS = Math.PI/180; 
+var delta_x = 0;
+var delta_y = 0;
 
-var enemy_current_x = 100;
-var enemy_current_y = 500;
+var enemyPointIndex = 0;
 
-async function drawEnemy() {
-    for (var i = 0; i < enemyPoints.length; i++) {
-        var sign_x;
-        var sign_y;
-        if(enemyPoints[i].x == x) {
-            sign_x = 0;
-        }
-        if(enemyPoints[i].x < x) {
-            sign_x = -1;
-        }
-        if(enemyPoints[i].x > x) {
-            sign_x = 1;
-        }
+function drawEnemy() {  
+    var signX;
+    var signY;
+    if(enemyPoints[enemyPointIndex].x == enemy.currentPointX) {
+        signX = 0;
+    }
+    if(enemyPoints[enemyPointIndex].x <  enemy.currentPointX) {
+        signX = -1;
+    }
+    if(enemyPoints[enemyPointIndex].x >  enemy.currentPointX) {
+        signX = 1;
+    }
 
-        if(enemyPoints[i].y == y) {
-            sign_y = 0;
-        }
-        if(enemyPoints[i].y < y) {
-            sign_y = -1;
-        }
-        if(enemyPoints[i].y > y) {
-            sign_y = 1;
-        }
-        await animate(sign_x, sign_y, enemyPoints[i].x, enemyPoints[i].y, enemyPoints[i].rotation);
+    if(enemyPoints[enemyPointIndex].y ==  enemy.currentPointY) {
+        signY = 0;
+    }
+    if(enemyPoints[enemyPointIndex].y < enemy.currentPointY) {
+        signY = -1;
+    }
+    if(enemyPoints[enemyPointIndex].y > enemy.currentPointY) {
+        signY = 1;
+    }
+    ctx.translate(enemy.currentPointX + 31, enemy.currentPointY + 31);
+    ctx.rotate(enemyPoints[enemyPointIndex].rotation * TO_RADIANS);
+    ctx.drawImage(getImageByName("245"), -31, -31, 62, 62);
+    ctx.translate(0, 0);
+    ctx.setTransform(1,0,0,1,0,0);
+
+    enemy.currentPointX = enemy.currentPointX + signX;
+    enemy.currentPointY = enemy.currentPointY + signY;
+
+    if (enemy.currentPointX == enemyPoints[enemyPointIndex].x &&  enemy.currentPointY == enemyPoints[enemyPointIndex].y) {
+        enemyPointIndex += 1;
     }
 }
-
-
-var TO_RADIANS = Math.PI/180; 
-function animate(sign_x, sign_y, aim_x, aim_y, rotatation) {
-    return new Promise(function(resolve,reject){
-        var delta_x = 0;
-        var delta_y = 0;0, 0
-
-        function subAnimate() {
-            loadMap();
-            drawTower();
-            drawBullet();
-            ctx.translate(x + delta_x + 31, y + delta_y + 31);
-            ctx.rotate(rotatation * TO_RADIANS);
-            ctx.drawImage(getImageByName("245"), -31, -31, 62, 62);
-            ctx.translate(0, 0);
-            ctx.setTransform(1,0,0,1,0,0);
-
-            delta_x += sign_x;
-            delta_y += sign_y;
-
-            enemy_current_x = x + delta_x;
-            enemy_current_y = y + delta_y;
-
-            if ((x + delta_x) != aim_x || (y + delta_y) != aim_y) { 
-                requestAnimationFrame(subAnimate);
-            }
-            else {
-                x = aim_x;
-                y = aim_y;
-                resolve();
-            }
-        }
-
-        requestAnimationFrame(subAnimate);
-    });
-}
-
 
 function getAngle() {
     for (var i = 0; i < enemyPoints.length; i++) {
-        var result = Math.sqrt(Math.pow(enemy_current_x-200, 2) + Math.pow(enemy_current_y-450, 2))
+        var result = Math.sqrt(Math.pow(enemy.currentPointX-200, 2) + Math.pow(enemy.currentPointY-450, 2))
     }
-    if (result < 150) {
-        return Math.atan2(enemy_current_y - 450, enemy_current_x - 200);
+    if (result < 1000) {
+        return Math.atan2(enemy.currentPointY - 450, enemy.currentPointX - 200);
     }
     else return -Math.PI / 2;
 }
@@ -175,48 +196,44 @@ var bullet_current_x = 0;
 var bullet_current_y = 0
 
 function drawTower() {
-    ctx.drawImage(getImageByName("180"), mapTower[0].x, mapTower[0].y);
-    ctx.translate(mapTower[0].x+31, mapTower[0].y + 62 - 25);
+    towers[0].lastShoot += 1;
+    ctx.drawImage(getImageByName("180"), towers[0].x, towers[0].y);
+    ctx.translate(towers[0].x+31, towers[0].y + 62 - 25);
     var angle = getAngle();
+    var angle1 = (angle + Math.PI / 2);
     ctx.rotate(angle + Math.PI / 2); 
     ctx.drawImage(getImageByName("249"), -31, -62, 62, 62);
     ctx.translate(0, 0);
     ctx.setTransform(1,0,0,1,0,0);
-    if (bullet_current_x == 0) {
-        bullet_current_x = mapTower[0].x;
-        bullet_current_y = mapTower[0].y;
+
+    if (angle1 < 0)
+        angle1 += Math.PI * 2
+
+    if (towers[0].lastShoot == 10) {
+        towers[0].lastShoot = 0;
+        var bullet = new Bullet(towers[0].x + 60 * Math.sin(angle1),  towers[0].y - 60 * Math.cos(angle1));
+        towers[0].bullets.push(bullet);
     }
-    if (angle != -Math.PI / 2) {
-        
-        ctx.drawImage(getImageByName("275"), bullet_current_x, bullet_current_y);
-
-        if (bullet_current_x == enemy_current_x || bullet_current_y == enemy_current_y) {
-            bullet_current_x = mapTower[0].x;
-            bullet_current_y = mapTower[0].y;
-        }
-
-        console.log(bullet_current_y, enemy_current_y, bullet_current_x, enemy_current_x)
-        var a = (bullet_current_y - enemy_current_y) / (bullet_current_x - enemy_current_x)
-        var b = enemy_current_y - a * enemy_current_x;
-        
-        if ((angle >= Math.PI / 2 && angle <= Math.PI) || (angle >= -Math.PI && angle <= -Math.PI / 2)) {
-            bullet_current_x -= 1
+    var i = 0;
+    while (i < towers[0].bullets.length) {
+        ctx.drawImage(getImageByName("275"), towers[0].bullets[i].currentPointX, towers[0].bullets[i].currentPointY);
+        if (Math.hypot(towers[0].bullets[i].currentPointX-enemy.currentPointX, towers[0].bullets[i].currentPointY-enemy.currentPointY) < 15) {
+            towers[0].bullets.splice(i,1);
         }
         else {
-            bullet_current_x += 1
-        }
-        
-        bullet_current_y = a * bullet_current_x + b;
-
-        
-    }
-}
-
-function drawBullet() {
-    for (var i = 0; i < enemyPoints.length; i++) {
-        var result = Math.sqrt(Math.pow(enemy_current_x-200, 2) + Math.pow(enemy_current_y-450, 2))
-        if (result < 150) {
+            var a = (towers[0].bullets[i].currentPointY - enemy.currentPointY) / (towers[0].bullets[i].currentPointX - enemy.currentPointX)
+            var b = enemy.currentPointY - a * enemy.currentPointX;
             
+            if ((angle >= Math.PI / 2 && angle <= Math.PI) || (angle >= -Math.PI && angle <= -Math.PI / 2)) {
+                towers[0].bullets[i].currentPointX -= 2
+                console.log('x')
+            }
+            else {
+                towers[0].bullets[i].currentPointX += 2
+                console.log('y')
+            }
+            towers[0].bullets[i].currentPointY = a * towers[0].bullets[i].currentPointX + b; 
+            i += 1;
         }
     }
 }
@@ -238,4 +255,4 @@ function loadMap() {
     }
 }
 
-draw();
+loadImages();
