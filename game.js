@@ -105,9 +105,10 @@ class Tower {
     }
 }
 
-var tower = new Tower(200, 450, '249')
+var tower1 = new Tower(200, 450, '249');
+var tower2 = new Tower(450, 200, '249');
 
-var towers = [tower];
+var towers = [tower1 ,tower2];
 
 class Enemy {
     constructor(initPointX, initPointY) {
@@ -182,12 +183,12 @@ function drawEnemy() {
     }
 }
 
-function getAngle() {
+function getAngle(tower) {
     for (var i = 0; i < enemyPoints.length; i++) {
-        var result = Math.sqrt(Math.pow(enemy.currentPointX-200, 2) + Math.pow(enemy.currentPointY-450, 2))
+        var result = Math.sqrt(Math.pow(enemy.currentPointX-tower.x, 2) + Math.pow(enemy.currentPointY-tower.y, 2))
     }
     if (result < 1000) {
-        return Math.atan2(enemy.currentPointY - 450, enemy.currentPointX - 200);
+        return Math.atan2(enemy.currentPointY - tower.y, enemy.currentPointX - tower.x);
     }
     else return -Math.PI / 2;
 }
@@ -196,46 +197,50 @@ var bullet_current_x = 0;
 var bullet_current_y = 0
 
 function drawTower() {
-    towers[0].lastShoot += 1;
-    ctx.drawImage(getImageByName("180"), towers[0].x, towers[0].y);
-    ctx.translate(towers[0].x+31, towers[0].y + 62 - 25);
-    var angle = getAngle();
-    var angle1 = (angle + Math.PI / 2);
-    ctx.rotate(angle + Math.PI / 2); 
-    ctx.drawImage(getImageByName("249"), -31, -62, 62, 62);
-    ctx.translate(0, 0);
-    ctx.setTransform(1,0,0,1,0,0);
-
-    if (angle1 < 0)
-        angle1 += Math.PI * 2
-
-    if (towers[0].lastShoot == 10) {
-        towers[0].lastShoot = 0;
-        var bullet = new Bullet(towers[0].x + 60 * Math.sin(angle1),  towers[0].y - 60 * Math.cos(angle1));
-        towers[0].bullets.push(bullet);
-    }
-    var i = 0;
-    while (i < towers[0].bullets.length) {
-        ctx.drawImage(getImageByName("275"), towers[0].bullets[i].currentPointX, towers[0].bullets[i].currentPointY);
-        if (Math.hypot(towers[0].bullets[i].currentPointX-enemy.currentPointX, towers[0].bullets[i].currentPointY-enemy.currentPointY) < 15) {
-            towers[0].bullets.splice(i,1);
+   
+    for (var j = 0; j < towers.length; j++) {
+        towers[j].lastShoot += 1;
+        ctx.drawImage(getImageByName("180"), towers[j].x, towers[j].y);
+        ctx.translate(towers[j].x+31, towers[j].y + 62 - 25);
+        var angle = getAngle(towers[j]);
+        var angle1 = (angle + Math.PI / 2);
+        ctx.rotate(angle + Math.PI / 2); 
+        ctx.drawImage(getImageByName("249"), -31, -62, 62, 62);
+        ctx.translate(0, 0);
+        ctx.setTransform(1,0,0,1,0,0);
+    
+    
+        if (angle1 < 0)
+            angle1 += Math.PI * 2
+    
+        if (towers[j].lastShoot == 30) {
+            towers[j].lastShoot = 0;
+            var bullet = new Bullet(towers[j].x + 60 * Math.sin(angle1),  towers[j].y - 60 * Math.cos(angle1));
+            towers[j].bullets.push(bullet);
         }
-        else {
-            var a = (towers[0].bullets[i].currentPointY - enemy.currentPointY) / (towers[0].bullets[i].currentPointX - enemy.currentPointX)
-            var b = enemy.currentPointY - a * enemy.currentPointX;
-            
-            if ((angle >= Math.PI / 2 && angle <= Math.PI) || (angle >= -Math.PI && angle <= -Math.PI / 2)) {
-                towers[0].bullets[i].currentPointX -= 2
-                console.log('x')
+        var i = 0;
+        while (i < towers[j].bullets.length) {
+            ctx.drawImage(getImageByName("275"), towers[j].bullets[i].currentPointX, towers[j].bullets[i].currentPointY);
+            if (Math.hypot(towers[j].bullets[i].currentPointX-enemy.currentPointX, towers[j].bullets[i].currentPointY-enemy.currentPointY) < 15) {
+                towers[j].bullets.splice(i,1);
             }
             else {
-                towers[0].bullets[i].currentPointX += 2
-                console.log('y')
+                var a = (towers[j].bullets[i].currentPointY - enemy.currentPointY) / (towers[j].bullets[i].currentPointX - enemy.currentPointX)
+                var b = enemy.currentPointY - a * enemy.currentPointX;
+                
+                if ((angle >= Math.PI / 2 && angle <= Math.PI) || (angle >= -Math.PI && angle <= -Math.PI / 2)) {
+                    towers[j].bullets[i].currentPointX -= 2
+                }
+                else {
+                    towers[j].bullets[i].currentPointX += 2
+                }
+                towers[j].bullets[i].currentPointY = a * towers[j].bullets[i].currentPointX + b; 
+                i += 1;
             }
-            towers[0].bullets[i].currentPointY = a * towers[0].bullets[i].currentPointX + b; 
-            i += 1;
         }
     }
+
+    
 }
 
 function getImageByName(name) {
