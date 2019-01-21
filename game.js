@@ -106,14 +106,13 @@ var tower2 = new Tower(450, 200, '249');
 var towers = [tower1 ,tower2];
 
 class Enemy {
-    constructor(initPointX, initPointY, deltaX, deltaY, hits) {
+    constructor(initPointX, initPointY) {
         this.initPointX = initPointX;
         this.initPointY = initPointY;
         this.currentPointX = initPointX;
         this.currentPointY = initPointY;
-        this.deltaX = deltaX;
-        this.deltaY = deltaY;
-        this.hits = hits;
+        this.hits = 0;
+        this.enemyPointIndex = 0;
     }
 
     set setCurrentPointX(X) {
@@ -125,10 +124,7 @@ class Enemy {
     }
 }
 
-var enemy1 = new Enemy(100, 500, 0, 0, 0);
-var enemy2 = new Enemy(120, 500, 20, 0, 0);
-
-var enemies = [enemy1, enemy2]
+var enemies = []
 
 function draw() {
     loadMap();
@@ -148,32 +144,41 @@ var delta_x = 0;
 var delta_y = 0;
 
 var enemyPointIndex = 0;
+var lastEnemy = 0;
+var generatedEnemiesAmount = 0;
 
 function drawEnemy() {  
+    lastEnemy += 1;
+    if (lastEnemy == 100 && generatedEnemiesAmount < 5) {
+        var enemy = new Enemy(100, 500);
+        enemies.push(enemy);
+        generatedEnemiesAmount += 1;
+        lastEnemy = 0;
+    }
     for(var i = 0; i < enemies.length; i++) {
         var signX;
         var signY;
-        if(enemyPoints[enemyPointIndex].x + enemies[i].deltaX == enemies[i].currentPointX) {
+        if(enemyPoints[enemies[i].enemyPointIndex].x == enemies[i].currentPointX) {
             signX = 0;
         }
-        if(enemyPoints[enemyPointIndex].x + enemies[i].deltaX <  enemies[i].currentPointX) {
+        if(enemyPoints[enemies[i].enemyPointIndex].x <  enemies[i].currentPointX) {
             signX = -1;
         }
-        if(enemyPoints[enemyPointIndex].x + enemies[i].deltaX >  enemies[i].currentPointX) {
+        if(enemyPoints[enemies[i].enemyPointIndex].x >  enemies[i].currentPointX) {
             signX = 1;
         }
 
-        if(enemyPoints[enemyPointIndex].y + enemies[i].deltaY ==  enemies[i].currentPointY) {
+        if(enemyPoints[enemies[i].enemyPointIndex].y ==  enemies[i].currentPointY) {
             signY = 0;
         }
-        if(enemyPoints[enemyPointIndex].y + enemies[i].deltaY < enemies[i].currentPointY) {
+        if(enemyPoints[enemies[i].enemyPointIndex].y < enemies[i].currentPointY) {
             signY = -1;
         }
-        if(enemyPoints[enemyPointIndex].y + enemies[i].deltaY > enemies[i].currentPointY) {
+        if(enemyPoints[enemies[i].enemyPointIndex].y > enemies[i].currentPointY) {
             signY = 1;
         }
         ctx.translate(enemies[i].currentPointX + 31, enemies[i].currentPointY + 31);
-        ctx.rotate(enemyPoints[enemyPointIndex].rotation * TO_RADIANS);
+        ctx.rotate(enemyPoints[enemies[i].enemyPointIndex].rotation * TO_RADIANS);
         ctx.drawImage(getImageByName("245"), -31, -31, 62, 62);
         ctx.translate(0, 0);
         ctx.setTransform(1,0,0,1,0,0);
@@ -181,8 +186,8 @@ function drawEnemy() {
         enemies[i].currentPointX = enemies[i].currentPointX + signX;
         enemies[i].currentPointY = enemies[i].currentPointY + signY;
 
-        if (enemies[i].currentPointX == enemyPoints[enemyPointIndex].x &&  enemies[i].currentPointY == enemyPoints[enemyPointIndex].y) {
-            enemyPointIndex += 1;
+        if (enemies[i].currentPointX == enemyPoints[enemies[i].enemyPointIndex].x &&  enemies[i].currentPointY == enemyPoints[enemies[i].enemyPointIndex].y) {
+            enemies[i].enemyPointIndex += 1;
         }
     }
 }
@@ -223,8 +228,7 @@ function drawBullet() {
         var angle1 = (angle + Math.PI / 2);
         if (angle1 < 0)
             angle1 += Math.PI * 2
-
-        if (towers[j].lastShoot == 30 && enemies.length != 0) {
+        if (towers[j].lastShoot > 30 && enemies.length != 0) {
             towers[j].lastShoot = 0;
             var bullet = new Bullet(towers[j].x + 60 * Math.sin(angle1),  towers[j].y - 60 * Math.cos(angle1));
             towers[j].bullets.push(bullet);
