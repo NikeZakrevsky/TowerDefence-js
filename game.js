@@ -85,10 +85,6 @@ class Bullet {
         this.currentPointX = initPointX;
         this.currentPointY = initPointY;
     }
-
-    set setCurrentPointY(Y) {
-        this.currentPointY = Y;
-    }
 }
 
 class Tower {
@@ -107,6 +103,7 @@ var towers = [tower1 ,tower2];
 
 class Enemy {
     constructor(initPointX, initPointY) {
+        this.health = 10;
         this.initPointX = initPointX;
         this.initPointY = initPointY;
         this.currentPointX = initPointX;
@@ -177,9 +174,22 @@ function drawEnemy() {
         if(enemyPoints[enemies[i].enemyPointIndex].y > enemies[i].currentPointY) {
             signY = 1;
         }
+
+        
+
         ctx.translate(enemies[i].currentPointX + 31, enemies[i].currentPointY + 31);
+
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(0,255,0,1)";
+        ctx.fillRect(-18, -32, (enemies[i].health - enemies[i].hits)*3, 5)
+        ctx.lineWidth = "2";
+        ctx.strokeStyle = "black";
+        ctx.rect(-18, -32, 30, 5); 
+        ctx.stroke();
+
         ctx.rotate(enemyPoints[enemies[i].enemyPointIndex].rotation * TO_RADIANS);
         ctx.drawImage(getImageByName("245"), -31, -31, 62, 62);
+
         ctx.translate(0, 0);
         ctx.setTransform(1,0,0,1,0,0);
 
@@ -209,7 +219,6 @@ var bullet_current_x = 0;
 var bullet_current_y = 0
 
 function drawTower() {
-   
     for (var j = 0; j < towers.length; j++) {
         towers[j].lastShoot += 1;
         ctx.drawImage(getImageByName("180"), towers[j].x, towers[j].y);
