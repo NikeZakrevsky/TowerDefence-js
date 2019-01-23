@@ -3,6 +3,13 @@
 var imgTag = new Image();
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext("2d");
+canvas.addEventListener("mousedown", doMouseDown, false);
+
+function doMouseDown(event) {
+    console.log(event.pageX, event.pageY)
+    var tower = new Tower(event.pageX-31, event.pageY-31, '249');
+    towers.push(tower)
+}
 
 var map = 
         [
@@ -15,7 +22,8 @@ var map =
             ["024","025","299","001","001","001","027","024","024","024","024","025","023","024","024","024","024","024"],
             ["024","025","023","024","024","024","024","024","024","024","024","025","046","047","047","047","047","047"],
             ["024","025","023","024","024","024","024","024","024","024","024","026","001","001","001","001","001","001"],
-            ["024","025","023","024","024","024","024","024","024","024","024","024","024","024","024","024","024","024"]
+            ["024","025","023","024","024","024","024","024","024","024","024","024","024","024","024","024","024","024"],
+            ["024","024","024","024","024","024","024","024","024","024","024","024","024","024","024","024","024","024"],
         ]
         
 var imgs = []
@@ -37,6 +45,8 @@ function loadImages() {
     imagesPath.push({name: "249", path: "assets/PNG/Default size/towerDefense_tile249.png"});
     imagesPath.push({name: "245", path: "assets/PNG/Default size/towerDefense_tile245.png"});
     imagesPath.push({name: "275", path: "assets/PNG/Default size/towerDefense_tile275.png"});
+    imagesPath.push({name: "204", path: "assets/PNG/Default size/towerDefense_tile204.png"});
+    imagesPath.push({name: "206", path: "assets/PNG/Default size/towerDefense_tile206.png"});
 
     for(var i = 0; i < imagesPath.length; i++) {
         var img = new Image()
@@ -47,7 +57,7 @@ function loadImages() {
             loaded += 1;
             if (loaded == 16) {
                 drawAll();
-            }
+            }ctx.clearRect(20, 20, 100, 50);
         }
     }
 }
@@ -124,10 +134,12 @@ class Enemy {
 var enemies = []
 
 function draw() {
+    ctx.clearRect(0, 0, 1800, 600);
     loadMap();
     drawEnemy();
     drawTower();
     drawBullet();
+    drawMenu()
     requestAnimationFrame(draw)
 }
 
@@ -291,6 +303,17 @@ function loadMap() {
             ctx.drawImage(getImageByName(map[i][j]), j*64, i*64);
         }
     }
+}
+
+function drawMenu() {
+    ctx.drawImage(getImageByName("180"), 350, 630);
+    ctx.drawImage(getImageByName("249"), 350, 630-25);
+
+    ctx.drawImage(getImageByName("180"), 410, 630);
+    ctx.drawImage(getImageByName("204"), 410, 630-25);
+
+    ctx.drawImage(getImageByName("180"), 470, 630);
+    ctx.drawImage(getImageByName("206"), 470, 630-15);
 }
 
 loadImages();
